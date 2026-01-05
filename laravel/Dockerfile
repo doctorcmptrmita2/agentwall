@@ -15,12 +15,15 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     freetype-dev \
     oniguruma-dev \
+    icu-dev \
+    icu-libs \
     curl \
     git \
     unzip
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure intl \
     && docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
@@ -29,7 +32,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     gd \
     mbstring \
     opcache \
-    bcmath
+    bcmath \
+    intl
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
