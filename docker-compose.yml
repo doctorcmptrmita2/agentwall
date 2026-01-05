@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # FastAPI Proxy Engine
+  # ============================================
+  fastapi:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: agentwall-fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=${DEBUG:-true}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CLICKHOUSE_HOST=clickhouse
+      - REDIS_URL=redis://redis:6379
+      - LARAVEL_URL=http://laravel:8080
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+    volumes:
+      - ./fastapi:/app
+    depends_on:
+      - redis
+      - clickhouse
+    networks:
+      - agentwall-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # Redis (Rate Limiting & Caching)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: agentwall-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - agentwall-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ============================================
+  # ClickHouse (Time-series Logs)
+  # ============================================
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: agentwall-clickhouse
+    ports:
+      - "8123:8123"  # HTTP interface
+      - "9000:9000"  # Native interface
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DATABASE:-agentwall}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse/init:/docker-entrypoint-initdb.d
+    networks:
+      - agentwall-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # Laravel Dashboard (Coming Soon)
+  # ============================================
+  # laravel:
+  #   build:
+  #     context: ./laravel
+  #     dockerfile: Dockerfile
+  #   container_name: agentfirewall-laravel
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DB_CONNECTION=pgsql
+  #     - DB_HOST=postgres
+  #     - REDIS_HOST=redis
+  #   volumes:
+  #     - ./laravel:/var/www/html
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   networks:
+  #     - agentfirewall-network
+  #   restart: unless-stopped
+
+  # ============================================
+  # PostgreSQL (Laravel Database)
+  # ============================================
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: agentfirewall-postgres
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_DB=agentfirewall
+  #     - POSTGRES_USER=agentfirewall
+  #     - POSTGRES_PASSWORD=secret
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - agentfirewall-network
+  #   restart: unless-stopped
+
+networks:
+  agentwall-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  clickhouse-data:
+  # postgres-data:
