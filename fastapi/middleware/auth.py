@@ -141,4 +141,18 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 }
             }
         
+        # Server-key mode: Use OPENAI_API_KEY from env
+        # For testing or managed service mode
+        if api_key.startswith("aw-") or api_key == settings.INTERNAL_SECRET:
+            return {
+                "user_id": f"managed-{api_key[-8:]}",
+                "team_id": "managed",
+                "api_key_id": f"server-key",
+                "passthrough": False,  # Use server's OPENAI_API_KEY
+                "limits": {
+                    "max_steps": settings.MAX_STEPS,
+                    "daily_budget": 100.0,
+                }
+            }
+        
         return None
