@@ -269,10 +269,8 @@ class RunTracker:
         state.step_count += 1
         state.last_activity = datetime.utcnow()
         
-        # Store prompt for loop detection
-        if prompt:
-            state.recent_prompts.append(prompt[:500])  # Truncate for memory
-            state.recent_prompts = state.recent_prompts[-5:]  # Keep last 5
+        # NOTE: Prompt is NOT added here - it's added in complete_step()
+        # This allows loop detection to compare against PREVIOUS prompts only
         
         # Add warnings if approaching limits
         if state.step_count >= state.max_steps * 0.8:
@@ -287,6 +285,7 @@ class RunTracker:
         tokens: int = 0,
         cost: Decimal = Decimal("0"),
         response: str = "",
+        prompt: str = "",
         loop_detected: bool = False,
     ):
         """Update run after step completion"""
@@ -302,6 +301,11 @@ class RunTracker:
         state.total_tokens += tokens
         state.total_cost += cost
         state.last_activity = datetime.utcnow()
+        
+        # Store prompt for future loop detection
+        if prompt:
+            state.recent_prompts.append(prompt[:500])
+            state.recent_prompts = state.recent_prompts[-5:]
         
         if response:
             state.recent_responses.append(response[:500])

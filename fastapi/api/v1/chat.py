@@ -290,6 +290,7 @@ async def _handle_non_streaming(
         tokens=total_tokens,
         cost=cost,
         response=response_content,
+        prompt=prompt_text,
         loop_detected=loop_detected,
     ))
     
@@ -408,6 +409,7 @@ async def _handle_streaming(
             tokens=int(estimated_completion_tokens),
             cost=cost,
             response=response_content[:500],
+            prompt=prompt_text,
             loop_detected=False,
         ))
         
