@@ -43,12 +43,20 @@ async def chat_completions(
     # Extract user info from auth middleware
     user_id = getattr(http_request.state, "user_id", "anonymous")
     team_id = getattr(http_request.state, "team_id", "default")
-    api_key = getattr(http_request.state, "api_key", None)
+    api_key_id = getattr(http_request.state, "api_key_id", None)
+    is_passthrough = getattr(http_request.state, "passthrough", False)
+    
+    # For pass-through mode, extract the original API key from header
+    openai_api_key = None
+    if is_passthrough:
+        auth_header = http_request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            openai_api_key = auth_header[7:]
     
     logger.info(
         f"Chat request: run_id={run_id}, "
         f"user={user_id}, model={request.model}, "
-        f"stream={request.stream}"
+        f"stream={request.stream}, passthrough={is_passthrough}"
     )
     
     # Prepare OpenAI request (exclude AgentWall-specific fields)
@@ -63,7 +71,7 @@ async def chat_completions(
             stream_generator, metrics = await openai_proxy.chat_completion_stream(
                 request_data=openai_request,
                 run_id=run_id,
-                api_key=api_key
+                api_key=openai_api_key  # Pass user's key for pass-through mode
             )
             
             return StreamingResponse(
@@ -82,7 +90,7 @@ async def chat_completions(
             response_data = await openai_proxy.chat_completion(
                 request_data=openai_request,
                 run_id=run_id,
-                api_key=api_key
+                api_key=openai_api_key  # Pass user's key for pass-through mode
             )
             
             # Calculate overhead

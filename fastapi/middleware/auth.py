@@ -57,6 +57,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         request.state.user_id = user_info["user_id"]
         request.state.team_id = user_info["team_id"]
         request.state.api_key_id = user_info["api_key_id"]
+        request.state.passthrough = user_info.get("passthrough", False)
         
         logger.debug(
             f"Authenticated: user_id={user_info['user_id']}, "
@@ -121,6 +122,22 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 "limits": {
                     "max_steps": 30,
                     "daily_budget": 10.0,
+                }
+            }
+        
+        # MVP Mode: Pass-through authentication
+        # User sends their own OpenAI key, we proxy + track
+        # This builds trust: "We don't store your keys"
+        if api_key.startswith("sk-"):
+            # OpenAI key format detected - pass-through mode
+            return {
+                "user_id": f"passthrough-{api_key[-8:]}",  # Last 8 chars as identifier
+                "team_id": "passthrough",
+                "api_key_id": f"openai-{api_key[-8:]}",
+                "passthrough": True,  # Flag for logging
+                "limits": {
+                    "max_steps": settings.MAX_STEPS,
+                    "daily_budget": 100.0,  # Default limit
                 }
             }
         
