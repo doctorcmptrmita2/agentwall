@@ -1,5 +1,6 @@
 # ============================================
 # AgentWall Laravel - Production Dockerfile
+# Build: 2026-01-06-v2 (intl fix)
 # ============================================
 
 FROM php:8.3-fpm-alpine AS base
@@ -55,14 +56,23 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # Copy application code
 COPY . .
 
+# Create minimal .env for build (will be overwritten at runtime)
+RUN echo "APP_KEY=base64:placeholder000000000000000000000000000=" > .env
+
 # Generate optimized autoloader
 RUN composer dump-autoload --optimize --classmap-authoritative
 
+# Remove placeholder .env (runtime will use real env vars)
+RUN rm -f .env
+
 # Install Node.js and build assets
 RUN apk add --no-cache nodejs npm
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production || npm install --only=production
-RUN npm run build
+
+# Install ALL npm dependencies (including dev) for build
+RUN if [ -f package.json ]; then \
+        npm ci || npm install; \
+        npm run build; \
+    fi
 
 # ============================================
 # Production Stage
