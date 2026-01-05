@@ -86,6 +86,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
+# Import services for lifecycle management
+from services.clickhouse_client import clickhouse_client
+from services.run_tracker import run_tracker
+
 # Startup event
 @app.on_event("startup")
 async def startup_event():
@@ -95,9 +99,19 @@ async def startup_event():
     logger.info(f"DLP mode: {settings.DLP_MODE}")
     logger.info(f"Max steps: {settings.MAX_STEPS}")
     
-    # TODO: Initialize ClickHouse connection
-    # TODO: Initialize Redis connection
-    # TODO: Load ML models (sentence transformers)
+    # Initialize Redis for run tracking
+    try:
+        await run_tracker.connect()
+        logger.info("Redis connected for run tracking")
+    except Exception as e:
+        logger.warning(f"Redis connection failed (run tracking disabled): {e}")
+    
+    # Initialize ClickHouse client
+    try:
+        await clickhouse_client.start()
+        logger.info("ClickHouse client started")
+    except Exception as e:
+        logger.warning(f"ClickHouse client failed (logging disabled): {e}")
     
     logger.info("Startup complete")
 
@@ -107,9 +121,19 @@ async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info("Shutting down...")
     
-    # TODO: Flush pending logs to ClickHouse
-    # TODO: Close Redis connections
-    # TODO: Close ClickHouse connections
+    # Flush pending logs to ClickHouse
+    try:
+        await clickhouse_client.stop()
+        logger.info("ClickHouse logs flushed")
+    except Exception as e:
+        logger.error(f"ClickHouse shutdown error: {e}")
+    
+    # Close Redis connections
+    try:
+        await run_tracker.disconnect()
+        logger.info("Redis disconnected")
+    except Exception as e:
+        logger.error(f"Redis shutdown error: {e}")
     
     logger.info("Shutdown complete")
 
