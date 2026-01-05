@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -26,14 +27,26 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->brandName('AgentWall')
-            ->brandLogo(asset('branding/logo.svg'))
-            ->darkModeBrandLogo(asset('branding/logo-dark.svg'))
-            ->brandLogoHeight('2rem')
+            ->brandLogo(asset('branding/logoA.png'))
+            ->darkModeBrandLogo(asset('branding/logoA.png'))
+            ->brandLogoHeight('2.5rem')
             ->favicon(asset('favicon.ico'))
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => [
+                    50 => '#eff6ff',
+                    100 => '#dbeafe',
+                    200 => '#bfdbfe',
+                    300 => '#93c5fd',
+                    400 => '#60a5fa',
+                    500 => '#3b82f6',
+                    600 => '#2563eb',
+                    700 => '#1d4ed8',
+                    800 => '#1e40af',
+                    900 => '#1e3a8a',
+                    950 => '#172554',
+                ],
                 'danger' => Color::Red,
                 'success' => Color::Green,
                 'warning' => Color::Orange,
