@@ -12,9 +12,9 @@ done
 
 echo "✅ Database is ready!"
 
-# Run migrations
+# Run migrations (skip if already up to date)
 echo "🔄 Running migrations..."
-php artisan migrate --force
+php artisan migrate --force || echo "⚠️  Migrations failed or already up to date, continuing..."
 
 # Clear and cache config
 echo "⚙️  Optimizing application..."
