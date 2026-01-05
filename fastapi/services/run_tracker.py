@@ -98,7 +98,7 @@ class RunTracker:
             self._connected = True
             logger.info("Redis connected for run tracking")
         except Exception as e:
-            logger.error(f"Redis connection failed: {e}")
+            logger.warning(f"Redis connection failed (run tracking will use in-memory fallback): {e}")
             self._connected = False
     
     async def disconnect(self):

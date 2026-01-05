@@ -79,11 +79,11 @@ async def chat_completions(
     prompt_text = ""
     if request.messages:
         last_user_msg = next(
-            (m for m in reversed(request.messages) if m.get("role") == "user"),
+            (m for m in reversed(request.messages) if m.role == "user"),
             None
         )
-        if last_user_msg:
-            prompt_text = last_user_msg.get("content", "")[:500]
+        if last_user_msg and last_user_msg.content:
+            prompt_text = last_user_msg.content[:500]
     
     # === RUN-LEVEL GOVERNANCE ===
     run_state, step_result = await run_tracker.process_step(
