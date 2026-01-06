@@ -80,6 +80,16 @@ class LoopDetector:
                 logger.warning(f"Loop detected: exact prompt match")
                 return result
         
+        # Check 1.5: Normalized match (handles whitespace/case/punctuation)
+        for i, prev_prompt in enumerate(recent_prompts):
+            if self._normalized_match(current_prompt, prev_prompt):
+                result.is_loop = True
+                result.confidence = 0.98
+                result.loop_type = "normalized_match"
+                result.message = f"Near-exact prompt match detected (normalized)"
+                logger.warning(f"Loop detected: normalized match")
+                return result
+        
         # Check 2: Exact response repetition (if we have response)
         if current_response and recent_responses:
             response_hash = self._hash_text(current_response)
@@ -126,9 +136,13 @@ class LoopDetector:
         
         Simple but effective for detecting near-duplicates
         """
+        # Normalize: lowercase, strip, remove extra whitespace
+        text1 = ' '.join(text1.lower().strip().split())
+        text2 = ' '.join(text2.lower().strip().split())
+        
         # Tokenize (simple word split)
-        words1 = set(text1.lower().split())
-        words2 = set(text2.lower().split())
+        words1 = set(text1.split())
+        words2 = set(text2.split())
         
         if not words1 or not words2:
             return 0.0
@@ -137,6 +151,25 @@ class LoopDetector:
         union = words1 | words2
         
         return len(intersection) / len(union)
+    
+    def _normalized_match(self, text1: str, text2: str) -> bool:
+        """
+        Check if two texts are essentially the same after normalization
+        Handles whitespace, case, and punctuation differences
+        """
+        # Normalize both texts
+        import re
+        
+        def normalize(t: str) -> str:
+            # Lowercase
+            t = t.lower()
+            # Remove punctuation except numbers
+            t = re.sub(r'[^\w\s]', '', t)
+            # Collapse whitespace
+            t = ' '.join(t.split())
+            return t
+        
+        return normalize(text1) == normalize(text2)
     
     def _detect_oscillation(self, prompts: list[str]) -> bool:
         """

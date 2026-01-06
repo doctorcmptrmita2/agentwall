@@ -61,8 +61,18 @@ async def chat_completions(
     start_time = time.perf_counter()
     request_id = str(uuid.uuid4())
     
-    # Generate or use provided run_id
-    run_id = request.agentwall_run_id or str(uuid.uuid4())
+    # Generate or use provided run_id (check header first, then body)
+    # Header takes precedence for SDK compatibility
+    run_id = (
+        http_request.headers.get("X-AgentWall-Run-ID") or
+        http_request.headers.get("x-agentwall-run-id") or
+        request.agentwall_run_id or
+        str(uuid.uuid4())
+    )
+    
+    # Get step from header if provided
+    step_from_header = http_request.headers.get("X-AgentWall-Step") or http_request.headers.get("x-agentwall-step")
+    
     agent_id = request.agentwall_agent_id or ""
     
     # Extract user info from auth middleware

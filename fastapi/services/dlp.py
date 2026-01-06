@@ -64,11 +64,18 @@ class DLPEngine:
     def _init_patterns(self) -> dict[str, DLPPattern]:
         """Initialize detection patterns"""
         return {
-            # API Keys
+            # ================================================================
+            # API Keys - Comprehensive Coverage
+            # ================================================================
             "openai_key": DLPPattern(
                 "OpenAI API Key",
                 r"sk-[A-Za-z0-9]{20,}",
                 "sk-****"
+            ),
+            "openai_proj_key": DLPPattern(
+                "OpenAI Project Key",
+                r"sk-proj-[A-Za-z0-9]{20,}",
+                "sk-proj-****"
             ),
             "aws_key": DLPPattern(
                 "AWS Access Key",
@@ -85,15 +92,43 @@ class DLPEngine:
                 r"ghp_[A-Za-z0-9_]{36,255}",
                 "ghp_****"
             ),
+            # Slack Bot Token (xoxb-...)
+            "slack_token": DLPPattern(
+                "Slack Token",
+                r"xox[baprs]-[A-Za-z0-9-]{10,}",
+                "xox*-****"
+            ),
+            # SendGrid API Key (SG.xxx.yyy)
+            "sendgrid_key": DLPPattern(
+                "SendGrid API Key",
+                r"SG\.[A-Za-z0-9_-]{22,}\.[A-Za-z0-9_-]{22,}",
+                "SG.****"
+            ),
+            # Stripe Secret Key (sk_live_xxx or sk_test_xxx)
+            "stripe_secret": DLPPattern(
+                "Stripe Secret Key",
+                r"sk_(?:live|test)_[A-Za-z0-9]{24,}",
+                "sk_****"
+            ),
             
-            # Credit Cards
+            # ================================================================
+            # Credit Cards - All Major Types
+            # ================================================================
             "credit_card": DLPPattern(
                 "Credit Card",
                 r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
                 "****-****-****-****"
             ),
+            # American Express (15 digits, starts with 34 or 37)
+            "amex_card": DLPPattern(
+                "American Express",
+                r"\b3[47]\d{2}[-\s]?\d{6}[-\s]?\d{5}\b",
+                "****-******-*****"
+            ),
             
-            # PII
+            # ================================================================
+            # PII - Personal Identifiable Information
+            # ================================================================
             "email": DLPPattern(
                 "Email Address",
                 r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
@@ -109,20 +144,30 @@ class DLPEngine:
                 r"\b\d{3}-\d{2}-\d{4}\b",
                 "***-**-****"
             ),
+            # Turkish ID (TCKN) - 11 digits - DISABLED to avoid false positives
+            # "tckn": DLPPattern(
+            #     "Turkish ID Number",
+            #     r"\b[1-9]\d{10}\b",
+            #     "***********"
+            # ),
             
-            # Tokens
+            # ================================================================
+            # Tokens & Secrets
+            # ================================================================
             "jwt": DLPPattern(
                 "JWT Token",
-                r"eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",
+                r"eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}",
                 "eyJ****"
             ),
             "bearer_token": DLPPattern(
                 "Bearer Token",
-                r"Bearer\s+[A-Za-z0-9._-]+",
+                r"Bearer\s+[A-Za-z0-9._-]{20,}",
                 "Bearer ****"
             ),
             
-            # Private Keys
+            # ================================================================
+            # Private Keys & Certificates
+            # ================================================================
             "private_key": DLPPattern(
                 "Private Key",
                 r"-----BEGIN (?:RSA |DSA |EC )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |DSA |EC )?PRIVATE KEY-----",
