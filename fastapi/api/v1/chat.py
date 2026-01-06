@@ -369,6 +369,13 @@ async def _handle_non_streaming(
         user_agent=http_request.headers.get("user-agent", "")[:200],
     )))
     
+    # Warn if overhead exceeds target
+    if overhead_ms > 10:
+        logger.warning(f"High overhead: {overhead_ms:.2f}ms for run_id={run_id}")
+    
+    # Add AgentWall metadata to response
+    provider = response_data.pop("_agentwall_provider", "openai")
+    
     # Log to Laravel Dashboard (fire-and-forget, <1ms overhead)
     asyncio.create_task(log_to_laravel(
         request_id=request_id,
@@ -388,12 +395,6 @@ async def _handle_non_streaming(
         user_agent=http_request.headers.get("user-agent", "")[:255] or None,
     ))
     
-    # Warn if overhead exceeds target
-    if overhead_ms > 10:
-        logger.warning(f"High overhead: {overhead_ms:.2f}ms for run_id={run_id}")
-    
-    # Add AgentWall metadata to response
-    provider = response_data.pop("_agentwall_provider", "openai")
     response_data["agentwall"] = {
         "run_id": run_id,
         "step": step_number,
