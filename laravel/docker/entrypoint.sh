@@ -24,6 +24,10 @@ php artisan migrate --force || echo "⚠️  Migrations failed or already up to 
 echo "🌱 Seeding demo data..."
 php artisan db:seed --class=DatabaseSeeder --force || echo "⚠️  Seeding skipped or already done"
 
+# Publish Filament assets (CSS/JS)
+echo "🎨 Publishing Filament assets..."
+php artisan filament:assets
+
 # Clear and cache config
 echo "⚙️  Optimizing application..."
 php artisan config:cache
@@ -32,8 +36,9 @@ php artisan view:cache
 
 # Set permissions
 echo "🔐 Setting permissions..."
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 755 /var/www/html/public
 
 echo "✅ Deployment complete! Starting services..."
 
