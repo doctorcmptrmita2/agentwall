@@ -99,12 +99,23 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 # Make entrypoint executable
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Ensure all required directories exist with correct permissions
+RUN mkdir -p \
+    /var/www/html/bootstrap/cache \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/framework/cache \
+    /var/www/html/storage/logs \
+    /var/log/supervisor \
+    /run/nginx
 
-# Create necessary directories
-RUN mkdir -p /var/log/supervisor /run/nginx
+# Set ownership and permissions
+RUN chown -R www-data:www-data \
+    /var/www/html/storage \
+    /var/www/html/bootstrap/cache \
+    && chmod -R 775 \
+    /var/www/html/storage \
+    /var/www/html/bootstrap/cache
 
 # Expose port
 EXPOSE 80
