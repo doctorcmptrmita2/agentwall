@@ -1,0 +1,114 @@
+---
+title: Quickstart
+description: 'Get started with AgentWall in 5 minutes'
+---
+
+## Step 1: Get Your API Key
+
+AgentWall works in **pass-through mode** - you use your own OpenAI API key, and we add protection on top.
+
+No signup required for basic usage!
+
+## Step 2: Update Your Code
+
+Simply change the `base_url` in your OpenAI client:
+
+<CodeGroup>
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-your-openai-key",
+    base_url="https://api.agentwall.io/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)
+```
+
+```javascript JavaScript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  apiKey: 'sk-your-openai-key',
+  baseURL: 'https://api.agentwall.io/v1'
+});
+
+const response = await client.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+
+console.log(response.choices[0].message.content);
+```
+
+```bash cURL
+curl https://api.agentwall.io/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-openai-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+</CodeGroup>
+
+## Step 3: Add Run Tracking (Optional)
+
+To enable run-level tracking, add the `X-Run-ID` header:
+
+```python
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}],
+    extra_headers={
+        "X-Run-ID": "my-agent-task-123"
+    }
+)
+```
+
+This groups all requests from the same agent task together, enabling:
+- Run-level budget limits
+- Loop detection across requests
+- Step counting
+
+## Step 4: Check the Response
+
+AgentWall adds metadata to every response:
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "choices": [...],
+  "usage": {...},
+  "agentwall": {
+    "run_id": "my-agent-task-123",
+    "step": 1,
+    "cost_usd": 0.0012,
+    "dlp_triggered": false,
+    "loop_detected": false
+  }
+}
+```
+
+## Step 5: View Dashboard
+
+Visit [agentwall.io/admin](https://agentwall.io/admin) to see:
+- Real-time request logs
+- Cost tracking
+- Agent runs
+- Alerts
+
+<Card
+  title="View API Reference"
+  icon="code"
+  href="/api-reference/introduction"
+>
+  See all available endpoints and parameters.
+</Card>

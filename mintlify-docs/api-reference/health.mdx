@@ -1,0 +1,63 @@
+---
+title: Health & Status
+description: 'Check API health and status'
+---
+
+## Health Check
+
+```
+GET https://api.agentwall.io/health
+```
+
+Returns basic health status:
+
+```json
+{
+  "status": "healthy",
+  "service": "agentwall-proxy",
+  "version": "0.1.0",
+  "timestamp": "2026-01-06T12:00:00Z"
+}
+```
+
+## Detailed Health
+
+```
+GET https://api.agentwall.io/health/detailed
+```
+
+Returns full system status:
+
+```json
+{
+  "status": "healthy",
+  "service": "agentwall-proxy",
+  "version": "0.1.0",
+  "environment": "production",
+  "checks": {
+    "redis": {"status": "healthy"},
+    "clickhouse": {"status": "healthy"},
+    "openai": {"status": "configured"}
+  },
+  "config": {
+    "max_steps": 30,
+    "dlp_mode": "mask",
+    "dlp_enabled": true
+  }
+}
+```
+
+## Status Page
+
+Visit [status.agentwall.io](https://status.agentwall.io) for:
+- Real-time system status
+- Uptime history
+- Incident reports
+
+## Status JSON
+
+```
+GET https://api.agentwall.io/status/json
+```
+
+Machine-readable status for monitoring tools.

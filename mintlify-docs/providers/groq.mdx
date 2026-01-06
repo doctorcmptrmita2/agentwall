@@ -1,0 +1,49 @@
+---
+title: Groq
+description: 'Ultra-fast inference with LPU'
+---
+
+## What is Groq?
+
+Groq offers the fastest LLM inference using their custom LPU (Language Processing Unit) hardware.
+
+## Supported Models
+
+| Model | Speed | Cost |
+|-------|-------|------|
+| llama-3.1-70b-versatile | ~300 tok/s | $0.59/$0.79 |
+| llama-3.1-8b-instant | ~750 tok/s | $0.05/$0.08 |
+| mixtral-8x7b-32768 | ~500 tok/s | $0.27/$0.27 |
+| gemma2-9b-it | ~600 tok/s | $0.20/$0.20 |
+
+## Usage
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="gsk_your-groq-key",
+    base_url="https://api.agentwall.io/v1"
+)
+
+response = client.chat.completions.create(
+    model="llama-3.1-70b-versatile",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+## Auto-Detection
+
+AgentWall detects Groq keys (`gsk_...`) automatically.
+
+## Best For
+
+- Real-time applications
+- High-throughput workloads
+- Cost-sensitive projects
+
+## Get API Key
+
+1. Visit [console.groq.com](https://console.groq.com)
+2. Sign up (free tier available)
+3. Generate API key

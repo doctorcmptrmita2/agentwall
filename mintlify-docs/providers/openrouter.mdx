@@ -1,0 +1,52 @@
+---
+title: OpenRouter
+description: '100+ models via single API'
+---
+
+## What is OpenRouter?
+
+OpenRouter provides access to 100+ models from different providers through a single API.
+
+## Supported Models
+
+| Model | Provider | Cost |
+|-------|----------|------|
+| `anthropic/claude-3-opus` | Anthropic | $15/$75 |
+| `anthropic/claude-3-sonnet` | Anthropic | $3/$15 |
+| `google/gemini-pro` | Google | $0.125/$0.375 |
+| `meta-llama/llama-3-70b` | Meta | $0.80/$0.80 |
+| `mistralai/mixtral-8x7b` | Mistral | $0.27/$0.27 |
+
+[Full model list](https://openrouter.ai/models)
+
+## Usage
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-or-your-openrouter-key",
+    base_url="https://api.agentwall.io/v1"
+)
+
+response = client.chat.completions.create(
+    model="anthropic/claude-3-sonnet",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+## Model Naming
+
+Use OpenRouter's model format: `provider/model-name`
+
+```python
+model="anthropic/claude-3-opus"
+model="google/gemini-pro"
+model="meta-llama/llama-3-70b"
+```
+
+## Get API Key
+
+1. Visit [openrouter.ai](https://openrouter.ai)
+2. Sign up and get API key
+3. Use with AgentWall

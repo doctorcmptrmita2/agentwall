@@ -1,0 +1,52 @@
+---
+title: DeepSeek
+description: 'Cost-effective AI models'
+---
+
+## What is DeepSeek?
+
+DeepSeek offers high-quality models at significantly lower costs than competitors.
+
+## Supported Models
+
+| Model | Input Cost | Output Cost |
+|-------|------------|-------------|
+| deepseek-chat | $0.14/1M | $0.28/1M |
+| deepseek-coder | $0.14/1M | $0.28/1M |
+
+## Usage
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="your-deepseek-key",
+    base_url="https://api.agentwall.io/v1"
+)
+
+response = client.chat.completions.create(
+    model="deepseek-chat",
+    messages=[{"role": "user", "content": "Hello!"}],
+    extra_headers={"X-Provider": "deepseek"}
+)
+```
+
+## Force Provider
+
+Since DeepSeek keys don't have a unique prefix, use the header:
+
+```python
+extra_headers={"X-Provider": "deepseek"}
+```
+
+## Best For
+
+- Budget-conscious projects
+- High-volume applications
+- Code generation tasks
+
+## Get API Key
+
+1. Visit [platform.deepseek.com](https://platform.deepseek.com)
+2. Sign up and add credits
+3. Generate API key

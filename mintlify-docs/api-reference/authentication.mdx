@@ -1,0 +1,53 @@
+---
+title: Authentication
+description: 'How to authenticate with AgentWall'
+---
+
+## Pass-Through Mode (Default)
+
+Use your own OpenAI API key. AgentWall proxies requests and adds protection.
+
+```bash
+curl https://api.agentwall.io/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-openai-key" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-4o", "messages": [...]}'
+```
+
+**Benefits:**
+- No AgentWall account needed
+- Your key, your billing
+- We never store your key
+
+## API Key Formats
+
+AgentWall auto-detects your provider:
+
+| Key Format | Provider |
+|------------|----------|
+| `sk-...` | OpenAI |
+| `sk-or-...` | OpenRouter |
+| `gsk_...` | Groq |
+
+## Headers
+
+### Required
+
+```
+Authorization: Bearer <your-api-key>
+Content-Type: application/json
+```
+
+### Optional (AgentWall Features)
+
+```
+X-Run-ID: <unique-task-id>
+X-Run-Budget: <max-spend-usd>
+X-Provider: <force-provider>
+```
+
+## Security
+
+- All traffic is HTTPS encrypted
+- Keys are never logged or stored
+- Pass-through mode = zero retention

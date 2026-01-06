@@ -1,0 +1,105 @@
+---
+title: Introduction
+description: 'Guard the Agent, Save the Budget'
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.svg"
+  alt="AgentWall Hero"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.svg"
+  alt="AgentWall Hero"
+/>
+
+## What is AgentWall?
+
+AgentWall is the **first Agent Firewall** for AI Agents. It sits between your AI agents and LLM providers to:
+
+<CardGroup cols={2}>
+  <Card
+    title="Prevent Cost Blowups"
+    icon="dollar-sign"
+    href="/concepts/budget-enforcement"
+  >
+    Run-level budgets, step limits, and automatic kill-switch when limits are exceeded.
+  </Card>
+  <Card
+    title="Detect Infinite Loops"
+    icon="rotate"
+    href="/concepts/loop-detection"
+  >
+    Catch agents stuck in repetitive patterns before they drain your budget.
+  </Card>
+  <Card
+    title="Protect Sensitive Data"
+    icon="shield-halved"
+    href="/concepts/dlp"
+  >
+    DLP engine catches API keys, PII, credit cards before they reach the LLM.
+  </Card>
+  <Card
+    title="Track Everything"
+    icon="chart-line"
+    href="/quickstart"
+  >
+    Real-time logging, cost tracking, and analytics dashboard.
+  </Card>
+</CardGroup>
+
+## Why AgentWall?
+
+Traditional LLM gateways focus on **single requests**. AgentWall focuses on **entire agent runs**.
+
+| Feature | LLM Gateways | AgentWall |
+|---------|--------------|-----------|
+| Request-level budget | ✅ | ✅ |
+| **Run-level budget** | ❌ | ✅ |
+| **Loop detection** | ❌ | ✅ |
+| **Step counting** | ❌ | ✅ |
+| DLP/PII protection | Some | ✅ |
+| Multi-provider | ✅ | ✅ |
+
+## Quick Example
+
+Replace your OpenAI base URL and you're protected:
+
+```python
+from openai import OpenAI
+
+# Before: Direct to OpenAI
+client = OpenAI(api_key="sk-...")
+
+# After: Through AgentWall
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://api.agentwall.io/v1"
+)
+
+# That's it! Your agent is now protected.
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+## Supported Providers
+
+AgentWall supports multiple LLM providers through a single API:
+
+- **OpenAI** - GPT-4, GPT-3.5, etc.
+- **OpenRouter** - 100+ models via single API
+- **Groq** - Ultra-fast inference
+- **DeepSeek** - Cost-effective alternative
+- **Mistral** - European provider
+- **Ollama** - Local development
+
+<Card
+  title="Get Started in 5 Minutes"
+  icon="rocket"
+  href="/quickstart"
+>
+  Follow our quickstart guide to protect your first agent.
+</Card>

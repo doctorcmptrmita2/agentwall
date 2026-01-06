@@ -1,0 +1,84 @@
+---
+title: Features
+description: 'Everything AgentWall offers'
+---
+
+## Core Features
+
+### 🛡️ Run-Level Budget Enforcement
+
+Set budgets for entire agent tasks, not just single requests.
+
+```python
+# Agent can spend max $0.50 on this task
+headers = {
+    "X-Run-ID": "task-123",
+    "X-Run-Budget": "0.50"
+}
+```
+
+When budget is exceeded, AgentWall automatically:
+1. Blocks further requests
+2. Sends Slack alert
+3. Logs the incident
+
+### 🔄 Loop Detection
+
+Catches agents stuck in infinite loops:
+
+- **Exact Match**: Same prompt repeated
+- **Semantic Similarity**: Similar prompts (cosine similarity > 0.95)
+- **Oscillation**: A→B→A→B pattern
+
+### 🔒 DLP (Data Loss Prevention)
+
+Automatically detects and masks sensitive data:
+
+| Pattern | Example | Action |
+|---------|---------|--------|
+| API Keys | `sk-abc123...` | Mask |
+| Credit Cards | `4111-1111-1111-1111` | Block |
+| AWS Keys | `AKIA...` | Block |
+| JWT Tokens | `eyJ...` | Mask |
+| Email/Phone | PII patterns | Configurable |
+
+### 📊 Real-Time Dashboard
+
+- Request logs with filtering
+- Cost tracking (daily/monthly)
+- Agent run visualization
+- Kill-switch for runaway agents
+
+### 🚨 Alerts
+
+Get notified via Slack when:
+- Budget exceeded
+- Loop detected
+- DLP triggered
+- Agent killed
+
+### 🌐 Multi-Provider Support
+
+Single API for multiple LLM providers:
+
+| Provider | Models | Status |
+|----------|--------|--------|
+| OpenAI | GPT-4, GPT-3.5 | ✅ |
+| OpenRouter | 100+ models | ✅ |
+| Groq | Llama, Mixtral | ✅ |
+| DeepSeek | DeepSeek-V2 | ✅ |
+| Mistral | Mistral-7B+ | ✅ |
+| Ollama | Local models | ✅ |
+
+### ⚡ Performance
+
+- **<10ms overhead** on requests
+- **Streaming SSE** fully supported
+- **Async processing** for logging
+
+## Coming Soon
+
+- Tool governance (control which tools agents can use)
+- Incident replay (debug agent failures)
+- Advanced analytics
+- Team management

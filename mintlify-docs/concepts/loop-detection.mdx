@@ -1,0 +1,89 @@
+---
+title: Loop Detection
+description: 'Catch agents stuck in infinite loops'
+---
+
+## The Problem
+
+Agents can get stuck in loops:
+
+```
+Agent: "Let me check the file"
+LLM: "File not found"
+Agent: "Let me check the file"  ← Same thing!
+LLM: "File not found"
+Agent: "Let me check the file"  ← Loop!
+...repeat 1000 times...
+```
+
+## Detection Methods
+
+AgentWall uses three detection methods:
+
+### 1. Exact Match Detection
+
+Catches identical prompts:
+
+```python
+# Request 1
+"What is 2+2?"
+
+# Request 2 (blocked!)
+"What is 2+2?"  # Exact same prompt
+```
+
+### 2. Semantic Similarity
+
+Catches similar prompts using cosine similarity:
+
+```python
+# Request 1
+"What is the weather in New York?"
+
+# Request 2 (flagged - 0.97 similarity)
+"Tell me the weather for New York"
+```
+
+Threshold: 0.95 (configurable)
+
+### 3. Oscillation Detection
+
+Catches A→B→A→B patterns:
+
+```python
+# Request 1: "Create file"
+# Request 2: "Delete file"
+# Request 3: "Create file"  ← Oscillation!
+# Request 4: "Delete file"  ← Blocked!
+```
+
+## Configuration
+
+```python
+extra_headers={
+    "X-Run-ID": "task-123",
+    "X-Loop-Threshold": "0.90",  # Lower = more sensitive
+    "X-Max-Repetitions": "3"     # Allow 3 similar before block
+}
+```
+
+## Response When Loop Detected
+
+```json
+{
+  "error": {
+    "message": "Loop detected: similar prompt repeated 3 times",
+    "type": "loop_detected",
+    "code": "repetition_loop",
+    "similarity": 0.97,
+    "pattern": "exact_match"
+  }
+}
+```
+
+## Dashboard View
+
+See loop patterns visually:
+- Prompt similarity graph
+- Repetition timeline
+- One-click "allow this pattern" for false positives

@@ -1,0 +1,130 @@
+---
+title: Chat Completions
+description: 'Create chat completions with protection'
+openapi: POST /v1/chat/completions
+---
+
+## Endpoint
+
+```
+POST https://api.agentwall.io/v1/chat/completions
+```
+
+## Request Body
+
+<ParamField body="model" type="string" required>
+  Model to use. Examples: `gpt-4o`, `gpt-3.5-turbo`, `openrouter/anthropic/claude-3`
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  Array of message objects with `role` and `content`.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  Enable streaming responses.
+</ParamField>
+
+<ParamField body="max_tokens" type="integer">
+  Maximum tokens to generate.
+</ParamField>
+
+<ParamField body="temperature" type="number" default="1.0">
+  Sampling temperature (0-2).
+</ParamField>
+
+## Example Request
+
+<CodeGroup>
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-your-key",
+    base_url="https://api.agentwall.io/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Hello!"}
+    ],
+    max_tokens=100
+)
+
+print(response.choices[0].message.content)
+```
+
+```bash cURL
+curl https://api.agentwall.io/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "Hello!"}
+    ],
+    "max_tokens": 100
+  }'
+```
+
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1704567890,
+  "model": "gpt-4o",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  },
+  "agentwall": {
+    "run_id": "auto-abc123",
+    "step": 1,
+    "cost_usd": 0.0003,
+    "provider": "openai",
+    "dlp_triggered": false,
+    "loop_detected": false
+  }
+}
+```
+
+## Streaming
+
+```python
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Count to 10"}],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid request |
+| 401 | Invalid API key |
+| 429 | Budget exceeded or rate limited |
+| 500 | Server error |

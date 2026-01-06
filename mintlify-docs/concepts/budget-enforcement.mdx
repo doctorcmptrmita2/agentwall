@@ -1,0 +1,89 @@
+---
+title: Budget Enforcement
+description: 'Never wake up to a surprise AI bill'
+---
+
+## The Problem
+
+> "Our agent ran overnight and spent $50,000 on OpenAI" - Real story
+
+AI agents can spiral out of control:
+- Infinite loops
+- Hallucination-driven retries
+- Misconfigured batch jobs
+
+## The Solution
+
+AgentWall enforces budgets at multiple levels:
+
+```
+┌─────────────────────────────────────┐
+│         Budget Hierarchy            │
+├─────────────────────────────────────┤
+│  Monthly Budget: $1,000             │
+│    └── Daily Budget: $50            │
+│          └── Run Budget: $1         │
+│                └── Request: $0.10   │
+└─────────────────────────────────────┘
+```
+
+## Budget Levels
+
+### 1. Run-Level Budget
+
+Set per-task limits:
+
+```python
+extra_headers={
+    "X-Run-ID": "task-123",
+    "X-Run-Budget": "0.50"
+}
+```
+
+### 2. Daily Budget
+
+Configured in dashboard. Resets at midnight UTC.
+
+### 3. Monthly Budget
+
+Hard cap for the billing period.
+
+## What Happens When Budget Exceeded?
+
+1. **Request Blocked** - Returns 429 error
+2. **Run Terminated** - All subsequent requests fail
+3. **Alert Sent** - Slack notification
+4. **Logged** - Full audit trail
+
+```json
+{
+  "error": {
+    "message": "Run budget exceeded: $0.50 limit reached",
+    "type": "budget_exceeded",
+    "code": "run_budget_exceeded",
+    "run_id": "task-123",
+    "spent": 0.52,
+    "limit": 0.50
+  }
+}
+```
+
+## Cost Calculation
+
+AgentWall calculates costs in real-time:
+
+| Model | Input (per 1M) | Output (per 1M) |
+|-------|----------------|-----------------|
+| gpt-4o | $2.50 | $10.00 |
+| gpt-4o-mini | $0.15 | $0.60 |
+| gpt-3.5-turbo | $0.50 | $1.50 |
+
+Costs are calculated per-token and accumulated per run.
+
+## Dashboard View
+
+Monitor budgets in real-time:
+- Current spend vs limit
+- Projected daily/monthly spend
+- Top spending agents
+- Budget alerts history

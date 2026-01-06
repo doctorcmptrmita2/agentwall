@@ -1,0 +1,95 @@
+---
+title: Run-Level Tracking
+description: 'Track entire agent tasks, not just requests'
+---
+
+## What is a Run?
+
+A **run** represents an entire agent task - from start to finish. While traditional LLM gateways track individual requests, AgentWall tracks the complete lifecycle of an agent's work.
+
+```
+┌─────────────────────────────────────────┐
+│              Agent Run                   │
+│  run_id: "task-123"                     │
+│                                          │
+│  Step 1: "What files exist?"            │
+│  Step 2: "Read config.json"             │
+│  Step 3: "Update the settings"          │
+│  Step 4: "Verify changes"               │
+│                                          │
+│  Total: 4 steps, $0.0045, 12 seconds    │
+└─────────────────────────────────────────┘
+```
+
+## Why Run-Level Tracking?
+
+### Problem: Request-Level Limits Don't Work
+
+```python
+# Traditional gateway: $0.10 per request limit
+# Agent makes 1000 small requests = $100 bill! 😱
+```
+
+### Solution: Run-Level Budgets
+
+```python
+# AgentWall: $1.00 per run limit
+# Agent makes 1000 requests, hits limit at $1.00 ✅
+```
+
+## How to Use
+
+### 1. Add Run ID Header
+
+```python
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[...],
+    extra_headers={
+        "X-Run-ID": "my-unique-task-id"
+    }
+)
+```
+
+### 2. Set Run Budget (Optional)
+
+```python
+extra_headers={
+    "X-Run-ID": "task-123",
+    "X-Run-Budget": "0.50"  # Max $0.50 for this run
+}
+```
+
+### 3. Check Run Status
+
+The response includes run metadata:
+
+```json
+{
+  "agentwall": {
+    "run_id": "task-123",
+    "step": 5,
+    "total_cost": 0.0234,
+    "budget_remaining": 0.4766
+  }
+}
+```
+
+## Auto-Generated Run IDs
+
+If you don't provide a run ID, AgentWall generates one based on:
+- Your API key
+- Timestamp
+- Request hash
+
+This groups related requests automatically.
+
+## Run Limits
+
+| Limit | Default | Configurable |
+|-------|---------|--------------|
+| Max Steps | 30 | Yes |
+| Max Duration | 120s | Yes |
+| Max Cost | $10.00 | Yes |
+
+When any limit is exceeded, the run is terminated and you're notified.

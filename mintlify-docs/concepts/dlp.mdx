@@ -1,0 +1,93 @@
+---
+title: DLP (Data Loss Prevention)
+description: 'Protect sensitive data from leaking to LLMs'
+---
+
+## The Problem
+
+Agents can accidentally send sensitive data to LLMs:
+
+```python
+# Agent reads a config file
+config = open(".env").read()
+
+# Sends it to LLM (including API keys!)
+response = client.chat.completions.create(
+    messages=[{"role": "user", "content": f"Analyze this: {config}"}]
+)
+```
+
+## What AgentWall Detects
+
+| Category | Patterns | Action |
+|----------|----------|--------|
+| **API Keys** | OpenAI, AWS, Stripe, GitHub | Block/Mask |
+| **Credentials** | Passwords, tokens, secrets | Block |
+| **Financial** | Credit cards, bank accounts | Block |
+| **PII** | Email, phone, SSN | Mask |
+| **Code Secrets** | Private keys, certificates | Block |
+
+## Detection Methods
+
+### 1. Pattern Matching (Regex)
+
+```
+OpenAI Key: sk-[a-zA-Z0-9]{48}
+AWS Key: AKIA[0-9A-Z]{16}
+Credit Card: \d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}
+```
+
+### 2. Luhn Algorithm
+
+Validates credit card numbers mathematically.
+
+### 3. Entropy Analysis
+
+Detects high-entropy strings (likely secrets).
+
+## DLP Modes
+
+### Block Mode
+```json
+{
+  "error": {
+    "message": "Request blocked: API key detected in prompt",
+    "type": "dlp_violation",
+    "pattern": "openai_api_key"
+  }
+}
+```
+
+### Mask Mode (Default)
+```
+Before: "My key is sk-abc123xyz..."
+After:  "My key is sk-***REDACTED***"
+```
+
+### Shadow Log Mode
+Request proceeds, but violation is logged for audit.
+
+## Configuration
+
+```python
+extra_headers={
+    "X-DLP-Mode": "mask",        # block, mask, or shadow
+    "X-DLP-Patterns": "all",     # all, pii, secrets, financial
+}
+```
+
+## False Positives
+
+If legitimate content is blocked:
+
+1. Check dashboard for the specific pattern
+2. Add to allowlist
+3. Or use shadow mode for that pattern
+
+## Compliance
+
+AgentWall DLP helps with:
+- **GDPR** - PII protection
+- **PCI-DSS** - Credit card masking
+- **SOC2** - Audit logging
+- **HIPAA** - PHI detection (coming soon)

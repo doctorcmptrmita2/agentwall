@@ -1,0 +1,97 @@
+---
+title: API Reference
+description: 'OpenAI-compatible API with superpowers'
+---
+
+## Base URL
+
+```
+https://api.agentwall.io/v1
+```
+
+## Authentication
+
+AgentWall uses Bearer token authentication. Pass your OpenAI API key:
+
+```bash
+Authorization: Bearer sk-your-openai-key
+```
+
+## OpenAI Compatibility
+
+AgentWall is a **drop-in replacement** for OpenAI's API. All standard OpenAI endpoints work:
+
+| Endpoint | Status |
+|----------|--------|
+| `/v1/chat/completions` | ✅ Supported |
+| `/v1/completions` | 🔜 Coming |
+| `/v1/embeddings` | 🔜 Coming |
+
+## AgentWall Headers
+
+Add these headers for enhanced functionality:
+
+| Header | Description | Example |
+|--------|-------------|---------|
+| `X-Run-ID` | Group requests into a run | `task-123` |
+| `X-Run-Budget` | Max spend for this run | `0.50` |
+| `X-Provider` | Force specific provider | `openrouter` |
+| `X-DLP-Mode` | DLP behavior | `mask` |
+
+## Response Extensions
+
+Every response includes AgentWall metadata:
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "choices": [...],
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 20,
+    "total_tokens": 30
+  },
+  "agentwall": {
+    "run_id": "abc-123",
+    "step": 1,
+    "cost_usd": 0.0012,
+    "provider": "openai",
+    "dlp_triggered": false,
+    "loop_detected": false,
+    "latency_ms": 234
+  }
+}
+```
+
+## Error Responses
+
+AgentWall errors follow OpenAI's format:
+
+```json
+{
+  "error": {
+    "message": "Budget exceeded",
+    "type": "budget_exceeded",
+    "code": "run_budget_exceeded"
+  }
+}
+```
+
+## Rate Limits
+
+AgentWall doesn't add rate limits - your provider's limits apply.
+
+## Streaming
+
+Full SSE streaming support:
+
+```python
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[...],
+    stream=True
+)
+
+for chunk in stream:
+    print(chunk.choices[0].delta.content, end="")
+```
