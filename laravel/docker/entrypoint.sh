@@ -12,6 +12,11 @@ done
 
 echo "✅ Database is ready!"
 
+# CRITICAL: Clear ALL caches first
+echo "🧹 Clearing all caches..."
+php artisan optimize:clear
+php artisan filament:clear-cached-components || true
+
 # Discover packages (skipped during build)
 echo "🔍 Discovering packages..."
 php artisan package:discover --ansi
@@ -24,15 +29,17 @@ php artisan migrate --force || echo "⚠️  Migrations failed or already up to 
 echo "🌱 Seeding demo data..."
 php artisan db:seed --class=DatabaseSeeder --force || echo "⚠️  Seeding skipped or already done"
 
-# Publish Filament assets (CSS/JS)
+# CRITICAL: Publish Filament assets BEFORE caching
 echo "🎨 Publishing Filament assets..."
 php artisan filament:assets
+php artisan vendor:publish --tag=filament-config --force || true
 
-# Clear and cache config
+# Cache config/routes/views AFTER assets are published
 echo "⚙️  Optimizing application..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan filament:cache-components || true
 
 # Set permissions
 echo "🔐 Setting permissions..."
