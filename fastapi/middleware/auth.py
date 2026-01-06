@@ -24,7 +24,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
     """
     
     # Paths that don't require authentication
-    PUBLIC_PATHS = {"/", "/health", "/health/", "/health/ready", "/health/live", "/docs", "/redoc", "/openapi.json"}
+    PUBLIC_PATHS = {
+        "/", 
+        "/health", "/health/", "/health/ready", "/health/live", "/health/detailed",
+        "/status", "/status/", "/status/json",
+        "/docs", "/redoc", "/openapi.json"
+    }
     
     async def dispatch(self, request: Request, call_next):
         # Skip auth for public paths

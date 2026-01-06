@@ -13,7 +13,7 @@ import time
 import logging
 
 from config import settings
-from api.v1 import chat, health
+from api.v1 import chat, health, status
 from middleware.auth import AuthMiddleware
 from middleware.logging import LoggingMiddleware
 
@@ -24,12 +24,61 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
+# Create FastAPI app with OpenAPI docs always enabled
 app = FastAPI(
     title=settings.APP_NAME,
+    description="""
+## 🛡️ AgentWall - Guard the Agent, Save the Budget
+
+AgentWall is the first **Agent Firewall** for AI Agents. It sits between your AI agents and LLM providers to:
+
+- **Prevent Cost Blowups**: Run-level budgets, step limits, loop detection
+- **Protect Sensitive Data**: DLP engine catches API keys, PII, credit cards
+- **Monitor Everything**: Real-time logging, cost tracking, analytics
+
+### Quick Start
+
+Replace your OpenAI base URL:
+```python
+client = OpenAI(
+    api_key="your-openai-key",
+    base_url="https://api.agentwall.io/v1"
+)
+```
+
+### Features
+
+- ✅ OpenAI-compatible API (drop-in replacement)
+- ✅ Streaming SSE support
+- ✅ Multi-provider (OpenAI, OpenRouter, Groq, DeepSeek, Mistral)
+- ✅ Run-level budget tracking
+- ✅ Loop detection (exact, similar, oscillation)
+- ✅ DLP (API keys, credit cards, PII)
+- ✅ Real-time dashboard
+
+### Links
+
+- [Dashboard](https://agentwall.io/admin)
+- [Status Page](https://api.agentwall.io/status)
+- [Documentation](https://agentwall.io/docs)
+    """,
     version=settings.APP_VERSION,
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {"name": "openai-compatible", "description": "OpenAI-compatible chat completions API"},
+        {"name": "health", "description": "Health check endpoints for monitoring"},
+        {"name": "status", "description": "Public status page"},
+    ],
+    contact={
+        "name": "AgentWall Support",
+        "url": "https://agentwall.io",
+        "email": "support@agentwall.io",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 
 # CORS middleware
@@ -64,6 +113,7 @@ async def add_process_time_header(request: Request, call_next):
 
 # Include routers
 app.include_router(health.router, prefix="/health", tags=["health"])
+app.include_router(status.router, prefix="/status", tags=["status"])
 app.include_router(chat.router, prefix="/v1", tags=["openai-compatible"])
 
 # Global exception handler
@@ -154,8 +204,15 @@ async def shutdown_event():
 
 # Root endpoint
 @app.get("/")
-async def root():
-    """Root endpoint - API info"""
+async def root(request: Request):
+    """Root endpoint - API info or redirect to status for status subdomain"""
+    from fastapi.responses import RedirectResponse
+    
+    # If accessed via status.agentwall.io, redirect to /status
+    host = request.headers.get("host", "")
+    if host.startswith("status."):
+        return RedirectResponse(url="/status", status_code=302)
+    
     return {
         "name": settings.APP_NAME,
         "version": settings.APP_VERSION,
