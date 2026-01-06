@@ -20,6 +20,10 @@ php artisan package:discover --ansi
 echo "🔄 Running migrations..."
 php artisan migrate --force || echo "⚠️  Migrations failed or already up to date, continuing..."
 
+# Seed demo data (only if not already seeded)
+echo "🌱 Seeding demo data..."
+php artisan db:seed --class=DatabaseSeeder --force || echo "⚠️  Seeding skipped or already done"
+
 # Clear and cache config
 echo "⚙️  Optimizing application..."
 php artisan config:cache
