@@ -26,21 +26,67 @@ class AgentRunResource extends Resource
                 Forms\Components\Section::make('Run Details')
                     ->schema([
                         Forms\Components\TextInput::make('run_id')
-                            ->hidden()
-                            ->disabled(),
-                        Forms\Components\TextInput::make('status')
-                            ->disabled(),
+                            ->hidden(),
+                        
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'running' => 'Running',
+                                'completed' => 'Completed',
+                                'failed' => 'Failed',
+                                'killed' => 'Killed',
+                            ])
+                            ->default('running')
+                            ->required(),
+                        
                         Forms\Components\TextInput::make('model')
-                            ->disabled(),
+                            ->label('Model')
+                            ->placeholder('gpt-4')
+                            ->default('gpt-4')
+                            ->required(),
+                        
+                        Forms\Components\TextInput::make('agent_name')
+                            ->label('Agent Name')
+                            ->placeholder('My Agent')
+                            ->required(),
+                        
                         Forms\Components\TextInput::make('step_count')
-                            ->disabled(),
+                            ->label('Step Count')
+                            ->numeric()
+                            ->default(0)
+                            ->minValue(0),
+                        
                         Forms\Components\TextInput::make('total_tokens')
-                            ->disabled(),
+                            ->label('Total Tokens')
+                            ->numeric()
+                            ->default(0)
+                            ->minValue(0),
+                        
                         Forms\Components\TextInput::make('total_cost')
+                            ->label('Total Cost')
+                            ->numeric()
                             ->prefix('$')
-                            ->disabled(),
+                            ->default(0)
+                            ->minValue(0)
+                            ->step(0.01),
+                        
+                        Forms\Components\TextInput::make('total_latency_ms')
+                            ->label('Latency (ms)')
+                            ->numeric()
+                            ->default(0)
+                            ->minValue(0),
+                        
+                        Forms\Components\Checkbox::make('loop_detected')
+                            ->label('Loop Detected'),
+                        
+                        Forms\Components\Checkbox::make('budget_exceeded')
+                            ->label('Budget Exceeded'),
+                        
+                        Forms\Components\TextInput::make('kill_reason')
+                            ->label('Kill Reason')
+                            ->placeholder('Optional - reason for killing the run'),
                     ])
-                    ->columns(3),
+                    ->columns(2),
             ]);
     }
 
