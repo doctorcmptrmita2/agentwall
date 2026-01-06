@@ -63,8 +63,8 @@ RUN mkdir -p bootstrap/cache storage/framework/{sessions,views,cache} storage/lo
 # Create minimal .env for build (will be overwritten at runtime)
 RUN echo "APP_KEY=base64:placeholder000000000000000000000000000=" > .env
 
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize --classmap-authoritative
+# Generate optimized autoloader (skip package discovery - will run at runtime)
+RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts
 
 # Remove placeholder .env (runtime will use real env vars)
 RUN rm -f .env

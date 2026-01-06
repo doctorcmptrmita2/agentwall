@@ -12,6 +12,10 @@ done
 
 echo "✅ Database is ready!"
 
+# Discover packages (skipped during build)
+echo "🔍 Discovering packages..."
+php artisan package:discover --ansi
+
 # Run migrations (skip if already up to date)
 echo "🔄 Running migrations..."
 php artisan migrate --force || echo "⚠️  Migrations failed or already up to date, continuing..."
