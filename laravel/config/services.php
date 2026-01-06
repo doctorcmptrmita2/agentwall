@@ -14,12 +14,14 @@ return [
     |
     */
 
-    'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
+    'mailgun' => [
+        'secret' => env('MAILGUN_SECRET'),
+        'domain' => env('MAILGUN_DOMAIN'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
     ],
 
-    'resend' => [
-        'key' => env('RESEND_API_KEY'),
+    'postmark' => [
+        'token' => env('POSTMARK_TOKEN'),
     ],
 
     'ses' => [
@@ -29,28 +31,9 @@ return [
     ],
 
     'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | AgentWall Services
-    |--------------------------------------------------------------------------
-    */
-
-    'fastapi' => [
-        'url' => env('FASTAPI_URL', 'http://localhost:8000'),
-    ],
-
-    'clickhouse' => [
-        'host' => env('CLICKHOUSE_HOST', 'localhost'),
-        'port' => env('CLICKHOUSE_PORT', 8123),
-        'database' => env('CLICKHOUSE_DATABASE', 'agentwall'),
-        'username' => env('CLICKHOUSE_USER', 'default'),
-        'password' => env('CLICKHOUSE_PASSWORD', ''),
+        'webhook_url' => env('SLACK_WEBHOOK_URL'),
+        'channel' => env('SLACK_CHANNEL', '#agentwall-alerts'),
+        'enabled' => env('SLACK_ENABLED', false),
     ],
 
 ];

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SlackAlertService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -38,6 +39,55 @@ class AgentRun extends Model
             }
             if (!$model->started_at) {
                 $model->started_at = now();
+            }
+        });
+
+        static::updated(function ($model) {
+            $slack = new SlackAlertService();
+
+            // Alert: Run killed
+            if ($model->isDirty('status') && $model->status === 'killed') {
+                $slack->runKilled(
+                    $model->run_id,
+                    $model->kill_reason ?? 'Unknown',
+                    (float)$model->total_cost
+                );
+            }
+
+            // Alert: Loop detected
+            if ($model->isDirty('loop_detected') && $model->loop_detected) {
+                $slack->loopDetected(
+                    $model->run_id,
+                    $model->step_count,
+                    (float)$model->total_cost
+                );
+            }
+
+            // Alert: Budget exceeded
+            if ($model->isDirty('budget_exceeded') && $model->budget_exceeded) {
+                $slack->budgetExceeded(
+                    $model->run_id,
+                    (float)$model->total_cost,
+                    (float)($model->metadata['budget'] ?? 0)
+                );
+            }
+
+            // Alert: Run completed
+            if ($model->isDirty('status') && $model->status === 'completed') {
+                $slack->runCompleted(
+                    $model->run_id,
+                    $model->step_count,
+                    (float)$model->total_cost,
+                    $model->total_latency_ms
+                );
+            }
+
+            // Alert: Run failed
+            if ($model->isDirty('status') && $model->status === 'failed') {
+                $slack->runFailed(
+                    $model->run_id,
+                    $model->metadata['error'] ?? 'Unknown error'
+                );
             }
         });
     }
