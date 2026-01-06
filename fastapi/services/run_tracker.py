@@ -40,6 +40,10 @@ class RunState:
     total_tokens: int = 0
     total_cost: Decimal = Decimal("0")
     
+    # Budget tracking
+    daily_cost: Decimal = Decimal("0")
+    monthly_cost: Decimal = Decimal("0")
+    
     # Timing
     started_at: datetime = field(default_factory=datetime.utcnow)
     last_activity: datetime = field(default_factory=datetime.utcnow)

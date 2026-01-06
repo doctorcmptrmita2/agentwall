@@ -29,6 +29,7 @@ from services.run_tracker import run_tracker, RunState
 from services.loop_detector import loop_detector
 from services.cost_calculator import calculate_cost
 from services.clickhouse_client import clickhouse_client, RequestLog
+from middleware.budget_enforcer import budget_enforcer, BudgetPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +267,41 @@ async def _handle_non_streaming(
     
     # Calculate cost
     cost = calculate_cost(model, prompt_tokens, completion_tokens)
+    
+    # === BUDGET ENFORCEMENT ===
+    # Get daily and monthly spending from run_state
+    daily_spent = run_state.daily_cost
+    monthly_spent = run_state.monthly_cost
+    
+    budget_check = budget_enforcer.check_run_budget(
+        run_id=run_id,
+        current_cost=cost,
+        daily_spent=daily_spent,
+        monthly_spent=monthly_spent,
+    )
+    
+    if budget_check["should_kill"]:
+        logger.warning(
+            f"Budget exceeded for run_id={run_id}: {budget_check['reason']}"
+        )
+        await run_tracker.kill_run(
+            run_id,
+            f"budget_exceeded:{budget_check['exceeded_limit']}"
+        )
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": {
+                    "message": budget_check["reason"],
+                    "type": "budget_exceeded",
+                    "code": "agentwall_budget",
+                    "run_id": run_id,
+                    "exceeded_limit": budget_check["exceeded_limit"],
+                    "current_cost": budget_check["current_cost"],
+                    "limit": budget_check["limit"],
+                }
+            }
+        )
     
     # Extract response content
     response_content = ""
