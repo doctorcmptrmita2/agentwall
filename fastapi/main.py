@@ -89,6 +89,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Import services for lifecycle management
 from services.clickhouse_client import clickhouse_client
 from services.run_tracker import run_tracker
+from services.laravel_logger import laravel_logger
 
 # Startup event
 @app.on_event("startup")
@@ -113,6 +114,13 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"ClickHouse client failed (logging disabled): {e}")
     
+    # Start Laravel logger worker
+    try:
+        laravel_logger.start_worker()
+        logger.info("Laravel logger worker started")
+    except Exception as e:
+        logger.warning(f"Laravel logger failed: {e}")
+    
     logger.info("Startup complete")
 
 # Shutdown event
@@ -134,6 +142,13 @@ async def shutdown_event():
         logger.info("Redis disconnected")
     except Exception as e:
         logger.error(f"Redis shutdown error: {e}")
+    
+    # Stop Laravel logger
+    try:
+        await laravel_logger.stop()
+        logger.info("Laravel logger stopped")
+    except Exception as e:
+        logger.error(f"Laravel logger shutdown error: {e}")
     
     logger.info("Shutdown complete")
 

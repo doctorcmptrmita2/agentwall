@@ -36,4 +36,9 @@ return [
         'enabled' => env('SLACK_ENABLED', false),
     ],
 
+    'agentwall' => [
+        'internal_secret' => env('AGENTWALL_INTERNAL_SECRET', env('INTERNAL_SECRET', 'change-me-in-production')),
+        'fastapi_url' => env('FASTAPI_URL', 'http://localhost:8000'),
+    ],
+
 ];

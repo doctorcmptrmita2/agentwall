@@ -25,10 +25,13 @@ from decimal import Decimal
 
 from models.requests import ChatCompletionRequest
 from services.openai_proxy import openai_proxy, OpenAIError
+from services.multi_provider import multi_provider_proxy, MultiProviderError, detect_provider, resolve_model
 from services.run_tracker import run_tracker, RunState
 from services.loop_detector import loop_detector
 from services.cost_calculator import calculate_cost
 from services.clickhouse_client import clickhouse_client, RequestLog
+from services.dlp import dlp_engine
+from services.laravel_logger import log_to_laravel, laravel_logger
 from middleware.budget_enforcer import budget_enforcer, BudgetPolicy
 
 logger = logging.getLogger(__name__)
@@ -189,7 +192,7 @@ async def chat_completions(
                 http_request=http_request,
             )
     
-    except OpenAIError as e:
+    except (OpenAIError, MultiProviderError) as e:
         # Log error to ClickHouse
         asyncio.create_task(_log_error(
             run_id=run_id,
@@ -204,14 +207,15 @@ async def chat_completions(
             http_request=http_request,
         ))
         
-        logger.error(f"OpenAI error: {e.status_code} - {e.message}")
+        provider = getattr(e, 'provider', 'openai')
+        logger.error(f"{provider} error: {e.status_code} - {e.message}")
         raise HTTPException(
             status_code=e.status_code,
             detail={
                 "error": {
                     "message": e.message,
                     "type": "upstream_error",
-                    "code": "openai_error"
+                    "code": f"{provider}_error"
                 }
             }
         )
@@ -252,7 +256,8 @@ async def _handle_non_streaming(
 ) -> JSONResponse:
     """Handle non-streaming chat completion"""
     
-    response_data = await openai_proxy.chat_completion(
+    # Use multi-provider proxy (supports OpenAI, OpenRouter, etc.)
+    response_data = await multi_provider_proxy.chat_completion(
         request_data=openai_request,
         run_id=run_id,
         api_key=openai_api_key,
@@ -307,7 +312,16 @@ async def _handle_non_streaming(
     response_content = ""
     if response_data.get("choices"):
         message = response_data["choices"][0].get("message", {})
-        response_content = message.get("content", "")[:500]
+        response_content = message.get("content", "") or ""
+        
+        # === DLP: Redact sensitive data from response ===
+        redacted_content = dlp_engine.redact(response_content)
+        if redacted_content != response_content:
+            logger.info(f"DLP redacted response content for run_id={run_id}")
+            response_data["choices"][0]["message"]["content"] = redacted_content
+            response_content = redacted_content[:500]
+        else:
+            response_content = response_content[:500]
     
     # Post-response loop check
     loop_detected = False
@@ -355,11 +369,31 @@ async def _handle_non_streaming(
         user_agent=http_request.headers.get("user-agent", "")[:200],
     )))
     
+    # Log to Laravel Dashboard (fire-and-forget, <1ms overhead)
+    asyncio.create_task(log_to_laravel(
+        request_id=request_id,
+        model=model,
+        run_id=run_id,
+        provider=provider,
+        endpoint="/v1/chat/completions",
+        stream=False,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        total_tokens=total_tokens,
+        cost_usd=float(cost),
+        latency_ms=int(overhead_ms),
+        status_code=200,
+        loop_detected=loop_detected,
+        ip_address=http_request.client.host if http_request.client else None,
+        user_agent=http_request.headers.get("user-agent", "")[:255] or None,
+    ))
+    
     # Warn if overhead exceeds target
     if overhead_ms > 10:
         logger.warning(f"High overhead: {overhead_ms:.2f}ms for run_id={run_id}")
     
     # Add AgentWall metadata to response
+    provider = response_data.pop("_agentwall_provider", "openai")
     response_data["agentwall"] = {
         "run_id": run_id,
         "step": step_number,
@@ -367,6 +401,7 @@ async def _handle_non_streaming(
         "cost_usd": float(cost),
         "total_run_cost": float(run_state.total_cost + cost),
         "total_run_steps": run_state.step_count,
+        "provider": provider,
     }
     
     # Add warnings if any
@@ -406,7 +441,8 @@ async def _handle_streaming(
 ) -> StreamingResponse:
     """Handle streaming chat completion"""
     
-    stream_generator, metrics = await openai_proxy.chat_completion_stream(
+    # Use multi-provider proxy (supports OpenAI, OpenRouter, etc.)
+    stream_generator, metrics = await multi_provider_proxy.chat_completion_stream(
         request_data=openai_request,
         run_id=run_id,
         api_key=openai_api_key,
@@ -469,6 +505,22 @@ async def _handle_streaming(
             ip_address=http_request.client.host if http_request.client else "",
             user_agent=http_request.headers.get("user-agent", "")[:200],
         )))
+        
+        # Log to Laravel Dashboard (fire-and-forget)
+        asyncio.create_task(log_to_laravel(
+            request_id=request_id,
+            model=model,
+            run_id=run_id,
+            endpoint="/v1/chat/completions",
+            stream=True,
+            completion_tokens=int(estimated_completion_tokens),
+            cost_usd=float(cost),
+            latency_ms=int(overhead_ms),
+            ttfb_ms=int(metrics.first_chunk_ms) if metrics.first_chunk_ms else None,
+            status_code=200,
+            ip_address=http_request.client.host if http_request.client else None,
+            user_agent=http_request.headers.get("user-agent", "")[:255] or None,
+        ))
     
     return StreamingResponse(
         wrapped_generator(),

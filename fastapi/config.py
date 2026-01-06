@@ -24,6 +24,33 @@ class Settings(BaseSettings):
     OPENAI_BASE_URL: str = "https://api.openai.com"
     OPENAI_TIMEOUT: int = 120  # seconds
     
+    # Multi-Provider Support
+    # OpenRouter - 100+ models via single API
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api"
+    
+    # Groq - Ultra fast inference (LPU)
+    GROQ_API_KEY: str = ""
+    GROQ_BASE_URL: str = "https://api.groq.com/openai"
+    
+    # DeepSeek - Cheapest option
+    DEEPSEEK_API_KEY: str = ""
+    DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"
+    
+    # Mistral AI - European provider
+    MISTRAL_API_KEY: str = ""
+    MISTRAL_BASE_URL: str = "https://api.mistral.ai"
+    
+    # Ollama - Local development
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    
+    # Alibaba Qwen - Global access
+    QWEN_API_KEY: str = ""
+    QWEN_BASE_URL: str = "https://dashscope-intl.aliyuncs.com/compatible-mode"
+    
+    # Provider routing: "openai", "openrouter", "groq", "deepseek", "mistral", "ollama", "auto"
+    DEFAULT_PROVIDER: str = "auto"
+    
     # ClickHouse
     CLICKHOUSE_HOST: str = "localhost"
     CLICKHOUSE_PORT: int = 9000
