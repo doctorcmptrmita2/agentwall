@@ -63,6 +63,9 @@ RUN mkdir -p bootstrap/cache storage/framework/{sessions,views,cache} storage/lo
 # Create minimal .env for build (will be overwritten at runtime)
 RUN echo "APP_KEY=base64:placeholder000000000000000000000000000=" > .env
 
+# Clear any cached service providers from local dev
+RUN rm -f bootstrap/cache/services.php bootstrap/cache/packages.php
+
 # Generate optimized autoloader (skip package discovery - will run at runtime)
 RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts
 

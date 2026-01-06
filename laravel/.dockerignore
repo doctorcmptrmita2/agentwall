@@ -28,6 +28,10 @@
 /storage/framework/sessions/*
 /storage/framework/views/*
 
+# Bootstrap cache (will be generated at runtime)
+/bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
 # Testing
 /tests
 phpunit.xml
