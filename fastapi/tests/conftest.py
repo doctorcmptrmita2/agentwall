@@ -3,6 +3,13 @@ Pytest configuration and fixtures
 """
 
 import pytest
+import sys
+import os
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from fastapi.testclient import TestClient
 from main import app
 
