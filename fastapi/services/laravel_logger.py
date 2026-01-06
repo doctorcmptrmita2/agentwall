@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 # Configuration from settings
 LARAVEL_URL = settings.LARAVEL_URL
+# If internal URL fails, try public URL
+if "laravel" in LARAVEL_URL.lower() or "localhost" in LARAVEL_URL.lower():
+    LARAVEL_URL = "https://agentwall.io"  # Fallback to public URL
 INTERNAL_SECRET = settings.INTERNAL_SECRET
 LOG_TIMEOUT = 2.0  # seconds - don't block main request
 
