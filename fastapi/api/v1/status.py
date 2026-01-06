@@ -156,11 +156,11 @@ async def status_page(request: Request):
             <p>Last updated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
             <p class="mt-1">Auto-refreshes every 30 seconds</p>
             <p class="mt-4">
-                <a href="/docs" class="text-blue-600 hover:underline">API Documentation</a>
+                <a href="https://api.agentwall.io/docs" class="text-blue-600 hover:underline">API Documentation</a>
                 &nbsp;•&nbsp;
-                <a href="/health/detailed" class="text-blue-600 hover:underline">Health JSON</a>
+                <a href="https://api.agentwall.io/status/json" class="text-blue-600 hover:underline">Status JSON</a>
                 &nbsp;•&nbsp;
-                <a href="https://agentwall.io" class="text-blue-600 hover:underline">Dashboard</a>
+                <a href="https://agentwall.io/admin" class="text-blue-600 hover:underline">Dashboard</a>
             </p>
         </div>
     </div>
