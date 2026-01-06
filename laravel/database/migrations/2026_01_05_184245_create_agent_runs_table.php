@@ -12,7 +12,7 @@ return new class extends Migration
         // Full logs are in ClickHouse
         Schema::create('agent_runs', function (Blueprint $table) {
             $table->id();
-            $table->string('run_id', 36)->unique();
+            $table->string('run_id', 50)->unique();
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->foreignId('api_key_id')->nullable()->constrained()->nullOnDelete();
             $table->string('agent_id')->nullable();
