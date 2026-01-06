@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class AgentRun extends Model
 {
@@ -26,6 +27,20 @@ class AgentRun extends Model
         'ended_at',
         'metadata',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->run_id) {
+                $model->run_id = 'run_' . Str::uuid();
+            }
+            if (!$model->started_at) {
+                $model->started_at = now();
+            }
+        });
+    }
 
     protected $casts = [
         'total_cost' => 'decimal:6',

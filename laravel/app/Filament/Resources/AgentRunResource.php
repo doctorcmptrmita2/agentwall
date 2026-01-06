@@ -10,7 +10,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Http;
 
 class AgentRunResource extends Resource
 {
@@ -27,6 +26,7 @@ class AgentRunResource extends Resource
                 Forms\Components\Section::make('Run Details')
                     ->schema([
                         Forms\Components\TextInput::make('run_id')
+                            ->hidden()
                             ->disabled(),
                         Forms\Components\TextInput::make('status')
                             ->disabled(),
@@ -116,7 +116,6 @@ class AgentRunResource extends Resource
                     ->relationship('team', 'name'),
             ])
             ->actions([
-                // KILL SWITCH - The most important action!
                 Tables\Actions\Action::make('kill')
                     ->icon('heroicon-o-stop')
                     ->color('danger')
@@ -132,15 +131,11 @@ class AgentRunResource extends Resource
                             ->placeholder('Manual kill from dashboard'),
                     ])
                     ->action(function (AgentRun $record, array $data) {
-                        // Update local record
                         $record->update([
                             'status' => 'killed',
                             'kill_reason' => 'dashboard:' . $data['reason'],
                             'ended_at' => now(),
                         ]);
-                        
-                        // TODO: Send kill command to FastAPI via Redis
-                        // This will be implemented when we add Redis pub/sub
                         
                         Notification::make()
                             ->title('Run Killed')
@@ -176,7 +171,7 @@ class AgentRunResource extends Resource
                         }),
                 ]),
             ])
-            ->poll('5s'); // Auto-refresh every 5 seconds
+            ->poll('5s');
     }
 
     public static function getRelations(): array
