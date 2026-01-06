@@ -56,6 +56,10 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # Copy application code
 COPY . .
 
+# Create required directories for Laravel
+RUN mkdir -p bootstrap/cache storage/framework/{sessions,views,cache} storage/logs \
+    && chmod -R 775 bootstrap/cache storage
+
 # Create minimal .env for build (will be overwritten at runtime)
 RUN echo "APP_KEY=base64:placeholder000000000000000000000000000=" > .env
 
