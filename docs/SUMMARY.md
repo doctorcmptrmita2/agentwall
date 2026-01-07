@@ -10,6 +10,12 @@
 - [Core Concepts](./guide/concepts.md)
 - [FAQ](./guide/faq.md)
 
+## SDK Examples
+
+- [SDK Overview](./guide/sdks/index.md)
+- [Python SDK](./guide/sdks/python.md)
+- [JavaScript/TypeScript SDK](./guide/sdks/javascript.md)
+
 ## Integrations
 
 - [LangChain](./guide/integrations/langchain.md)

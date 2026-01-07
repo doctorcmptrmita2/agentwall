@@ -9,6 +9,7 @@ AgentWall is the world's first "Agent Firewall" for AI Agents. It provides run-l
 | Section | Description |
 |---------|-------------|
 | [Getting Started](./guide/getting-started.md) | 5-minute quickstart guide |
+| [SDK Examples](./guide/sdks/index.md) | Python & JavaScript code examples |
 | [API Reference](./api/chat-completions.md) | OpenAI-compatible API docs |
 | [Concepts](./guide/concepts.md) | Core concepts and architecture |
 | [Playground](./playground/examples.md) | Interactive examples |
