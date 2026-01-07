@@ -1,4 +1,4 @@
-﻿@extends('layouts.public')
+@extends('layouts.public')
 
 @section('title', 'Privacy Policy')
 @section('description', 'AgentWall Privacy Policy - How we handle your data.')
@@ -15,6 +15,7 @@
 <section class="py-12 px-4 bg-lighter">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <!-- Contents -->
             <div class="p-8 border-b border-gray-200 bg-gray-50">
                 <h2 class="font-bold text-darkest mb-4">Contents</h2>
                 <nav class="grid md:grid-cols-2 gap-2 text-sm">
@@ -33,9 +34,9 @@
                         <span class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-white text-sm font-bold">1</span>
                         Introduction
                     </h2>
-                    <p class="text-gray-600 leading-relaxed">AgentWall is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI agent governance platform.</p>
+                    <p class="text-gray-600 leading-relaxed">AgentWall ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI agent governance platform.</p>
                 </section>
-                
+
                 <section id="p2">
                     <h2 class="text-xl font-bold text-darkest mb-4 flex items-center gap-3">
                         <span class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-white text-sm font-bold">2</span>
@@ -89,7 +90,7 @@
                         </ul>
                     </div>
                 </section>
-                
+
                 <section id="p5">
                     <h2 class="text-xl font-bold text-darkest mb-4 flex items-center gap-3">
                         <span class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center text-white text-sm font-bold">5</span>
@@ -114,7 +115,7 @@
                         </div>
                     </div>
                     <div class="bg-success-green/10 border border-success-green/30 rounded-xl p-4">
-                        <p class="text-gray-600 text-sm"><strong class="text-darkest">Zero Retention Mode:</strong> Enterprise customers can enable Zero Retention Mode where no prompt or response content is ever stored.</p>
+                        <p class="text-gray-600 text-sm"><strong class="text-darkest">🔒 Zero Retention Mode:</strong> Enterprise customers can enable Zero Retention Mode where no prompt or response content is ever stored.</p>
                     </div>
                 </section>
                 
