@@ -336,9 +336,12 @@ async def test_loop_detection():
             data = await resp.json()
             
             is_blocked = resp.status == 429
-            is_loop = data.get("error", {}).get("type") == "loop_detected"
+            # Error is in detail.error, not top-level error
+            error_type = data.get("detail", {}).get("error", {}).get("type")
+            is_loop = error_type == "loop_detected"
+            loop_type = data.get("detail", {}).get("error", {}).get("loop_type", "unknown")
             log_test("Loop detection - Request 2 blocked", is_blocked and is_loop, 
-                    f"Status: {resp.status}, Type: {data.get('error', {}).get('type')}", duration)
+                    f"Status: {resp.status}, Type: {error_type}, Loop: {loop_type}", duration)
 
 
 async def test_dlp_protection():
